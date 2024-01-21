@@ -7,8 +7,10 @@ pip3 install -r requirements.txt
 ```
 For better performance, create a separate virtual environment
 ## How to use
-The main file is `main.py`
+The main file is `main.py` 
+
 ![main](img/main.png)
+
 After launch, you will be asked to enter the path to the desired image from which you want to make a palette, and then the number of colors in this palette (from 0 to infinity)
 ## Example (`color_count = 5`)
 | ![example1](img/example1.png) | ![palette](img/palette_example.png) | ![paintnet](img/paintnet.png)

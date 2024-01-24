@@ -1,6 +1,7 @@
 from colorthief import ColorThief
 from os import system
-
+from typing import NamedTuple
+from exception import CantGetPaletteData
 
 TITLE: str = """
  ___  _   _    ___  ___  ___  ___   __   ___  _   _  _  _  ___ 
@@ -19,43 +20,62 @@ yt - youtube.com/@kuve.
 """
 
 
-def get_image_colors(file: str = "path", color_count: int = 5):
+class PaletteInfo(NamedTuple):
+    file_path: str
+    colors_count: int
+
+
+def get_file_path() -> str:
     try:
-        image = ColorThief(file=file)
-        print("Loaded successfully! Wait a bit")
+        return str(input("Path to image with palette: "))
+    except ValueError:
+        raise CantGetPaletteData
 
-        result = image.get_palette(quality=1, color_count= color_count)
 
-        return result
-    except:
-        print("No such image!")
+def get_colors_count() -> int:
+    try:
+        return int(input("Number of colors on the palette: "))
+    except ValueError:
+        raise CantGetPaletteData
 
-def convert_rgb_to_hex(rgb_color: tuple):
-    hex_color: str = '{:X}{:X}{:X}'.format(*rgb_color)
-    result: str = "FF"+hex_color
 
-    return result
+def get_image_colors(palette_info: PaletteInfo) -> tuple:
+    try:
+        image = ColorThief(file=palette_info.file_path)
+    except ValueError:
+        raise CantGetPaletteData
+    print("Loaded successfully! Wait a bit")
+    return image.get_palette(quality=1, color_count=palette_info.colors_count)
+
+
+def get_palette_info() -> PaletteInfo:
+    file_path = get_file_path()
+    colors_count = get_colors_count()
+    return PaletteInfo(file_path=file_path, colors_count=colors_count)
+
+
+def convert_rgb_to_hex(rgb_color: tuple) -> str:
+    hex_color: str = "{:X}{:X}{:X}".format(*rgb_color)
+    return "FF" + hex_color
+
+
+def write_to_file(colors: tuple) -> None:
+    file = open("palette.txt", "w")
+
+    for color in colors:
+        file.write(convert_rgb_to_hex(color) + "\n")
+
 
 def main():
     while True:
-        system('cls||clear')
+        system("cls||clear")
         print(TITLE)
         print(INF)
 
-        try:
-            image_uri = str(input("Path to image with palette: "))
-            color_count: int = int(input("Number of colors on the palette: "))
-        except ValueError:
-            print("An error has occurred!")
-            
-        colors = get_image_colors(file=image_uri, color_count=color_count)
-        file = open("palette.txt", "w")
-        try:
-            for color in colors:
-                file.write(convert_rgb_to_hex(color) + "\n")
-        except: 
-            pass
-        
+        palette_info = get_palette_info()
+        colors = get_image_colors(palette_info=palette_info)
+        write_to_file(colors=colors)
+
         input("Done, press Enter to go back...")
 
 

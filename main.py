@@ -1,3 +1,4 @@
+import logging
 from colorthief import ColorThief
 from os import system
 from typing import NamedTuple
@@ -39,22 +40,31 @@ def get_colors_count() -> int:
         raise CantGetPaletteData
 
 
-def get_image_colors(palette_info: PaletteInfo) -> tuple:
-    try:
-        image = ColorThief(file=palette_info.file_path)
-    except ValueError:
-        raise CantGetPaletteData
-    print("Loaded successfully! Wait a bit")
-    return image.get_palette(quality=1, color_count=palette_info.colors_count)
-
-
 def get_palette_info() -> PaletteInfo:
+    """Getting the number of colors and the path to the file from the user"""
     file_path = get_file_path()
     colors_count = get_colors_count()
     return PaletteInfo(file_path=file_path, colors_count=colors_count)
 
 
+def get_image_colors(palette_info: PaletteInfo) -> tuple:
+    """
+    Getting colors from a picture
+    :palette_info: Information about the number of colors and the path to the image file
+    """
+    try:
+        image = ColorThief(file=palette_info.file_path)
+        print("Loaded successfully! Wait a bit")
+        return image.get_palette(quality=1, color_count=palette_info.colors_count)
+    except FileNotFoundError:
+        raise CantGetPaletteData
+
+
 def convert_rgb_to_hex(rgb_color: tuple) -> str:
+    """
+    Converts color values ​​from RGB to hex format
+    :rgb_color: RGB color tuple (*, *, *)
+    """
     hex_color: str = "{:X}{:X}{:X}".format(*rgb_color)
     return "FF" + hex_color
 
@@ -67,15 +77,23 @@ def write_to_file(colors: tuple) -> None:
 
 
 def main():
+    logging.basicConfig(
+        level=logging.INFO,
+        filename="py_log.log",
+        filemode="w",
+        format="%(asctime)s %(levelname)s %(message)s",
+    )
     while True:
         system("cls||clear")
         print(TITLE)
         print(INF)
-
-        palette_info = get_palette_info()
-        colors = get_image_colors(palette_info=palette_info)
+        try:
+            palette_info = get_palette_info()
+            colors = get_image_colors(palette_info=palette_info)
+        except CantGetPaletteData:
+            logging.error("Incorrect values! The program started all over again.")
+            continue
         write_to_file(colors=colors)
-
         input("Done, press Enter to go back...")
 
 
